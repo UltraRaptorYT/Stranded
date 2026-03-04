@@ -128,6 +128,108 @@ const SITUATIONS: Situation[] = [
     },
     optionB: { label: "Wait & Hope", effects: { thirst: -5, energy: 5 } },
   },
+  {
+    text: "You hear strange animal sounds at night. Do you keep a watch rotation or let everyone sleep to recover energy?",
+    optionA: { label: "Night Watch", effects: { energy: -10, health: 10 } },
+    optionB: { label: "Everyone Sleep", effects: { energy: 15, health: -10 } },
+  },
+  {
+    text: "A teammate finds a rusty metal sheet. Do you use it to improve shelter or break it down for tools?",
+    optionA: {
+      label: "Improve Shelter",
+      effects: { health: 15, resources: -10 },
+    },
+    optionB: { label: "Make Tools", effects: { resources: 15, energy: -5 } },
+  },
+  {
+    text: "You see crabs on the beach. Do you catch them for food or spend time making a water collector?",
+    optionA: {
+      label: "Catch Crabs",
+      effects: { resources: 15, energy: -10, thirst: -5 },
+    },
+    optionB: {
+      label: "Water Collector",
+      effects: { thirst: 15, resources: -10 },
+    },
+  },
+  {
+    text: "Someone suggests exploring deeper inland. Another suggests securing the camp first. What does the group do?",
+    optionA: {
+      label: "Explore Inland",
+      effects: { resources: 20, energy: -15, health: -5 },
+    },
+    optionB: {
+      label: "Secure Camp",
+      effects: { health: 10, energy: 5, resources: -5 },
+    },
+  },
+  {
+    text: "You find a fallen tree that could be used as a bridge over a muddy area. Do you build the bridge or walk around?",
+    optionA: {
+      label: "Build Bridge",
+      effects: { energy: -10, health: 5, resources: 10 },
+    },
+    optionB: {
+      label: "Walk Around",
+      effects: { energy: -5, thirst: -10, resources: 5 },
+    },
+  },
+  {
+    text: "A group member is panicking and wants to give up. Do you stop to encourage them or keep moving?",
+    optionA: { label: "Encourage Them", effects: { health: 10, energy: -5 } },
+    optionB: { label: "Keep Moving", effects: { resources: 10, health: -10 } },
+  },
+  {
+    text: "You spot dark clouds and feel humidity rising. Do you rush to collect rainwater now or focus on gathering food?",
+    optionA: {
+      label: "Collect Rainwater",
+      effects: { thirst: 20, energy: -10 },
+    },
+    optionB: { label: "Gather Food", effects: { resources: 15, thirst: -10 } },
+  },
+  {
+    text: "Your campfire is dying. Do you spend energy gathering more wood or save energy and risk cold and insects?",
+    optionA: { label: "Gather Wood", effects: { energy: -10, health: 10 } },
+    optionB: { label: "Save Energy", effects: { energy: 10, health: -10 } },
+  },
+  {
+    text: "You find a fishing spot. Do you spend time crafting a fishing spear or continue scouting for rescue routes?",
+    optionA: {
+      label: "Make Fishing Spear",
+      effects: { resources: 20, energy: -10 },
+    },
+    optionB: {
+      label: "Scout Routes",
+      effects: { health: 5, thirst: -10, energy: -5 },
+    },
+  },
+  {
+    text: "A strange berry bush is found. Do you test it carefully (slow) or eat immediately to refill resources?",
+    optionA: {
+      label: "Test Carefully",
+      effects: { resources: 5, energy: -5, health: 5 },
+    },
+    optionB: {
+      label: "Eat Immediately",
+      effects: { resources: 15, health: -15 },
+    },
+  },
+  {
+    text: "You discover a small freshwater puddle but it's far from camp. Do you carry water back (hard work) or drink on the spot?",
+    optionA: { label: "Carry Back", effects: { thirst: 15, energy: -15 } },
+    optionB: { label: "Drink Now", effects: { thirst: 20, resources: -5 } },
+  },
+  {
+    text: "You find cloth from the wreckage. Do you use it for bandages or use it for a large rescue flag?",
+    optionA: {
+      label: "Make Bandages",
+      effects: { health: 15, resources: -10 },
+    },
+    optionB: {
+      label: "Rescue Flag",
+      effects: { resources: -10, health: 5, energy: -5 },
+    },
+  },
 ];
 
 const CRISES: Crisis[] = [
@@ -171,6 +273,76 @@ const CRISES: Crisis[] = [
       label: "We don't...",
       sublabel: "FAILURE",
       effects: { thirst: -20, health: -10, energy: -5 },
+    },
+  },
+  {
+    text: "Wild boars are charging toward camp! You need volunteers to scare them away and protect your supplies.",
+    peopleNeeded: 6,
+    optionA: {
+      label: "We have enough!",
+      sublabel: "SUCCESS",
+      effects: { energy: -10, resources: -5 },
+    },
+    optionB: {
+      label: "We don't...",
+      sublabel: "FAILURE",
+      effects: { resources: -25, health: -10, energy: -10 },
+    },
+  },
+  {
+    text: "A fire spreads from the campfire! You need volunteers to put it out before shelter and supplies burn.",
+    peopleNeeded: 7,
+    optionA: {
+      label: "We have enough!",
+      sublabel: "SUCCESS",
+      effects: { energy: -10, resources: -10 },
+    },
+    optionB: {
+      label: "We don't...",
+      sublabel: "FAILURE",
+      effects: { resources: -30, health: -10 },
+    },
+  },
+  {
+    text: "A sudden heatwave hits. People are dizzy and dehydrated. You need volunteers to fetch water fast.",
+    peopleNeeded: 5,
+    optionA: {
+      label: "We have enough!",
+      sublabel: "SUCCESS",
+      effects: { thirst: 10, energy: -10 },
+    },
+    optionB: {
+      label: "We don't...",
+      sublabel: "FAILURE",
+      effects: { thirst: -25, health: -10, energy: -5 },
+    },
+  },
+  {
+    text: "A teammate is injured from a fall. You need volunteers to help carry them and treat the wound.",
+    peopleNeeded: 4,
+    optionA: {
+      label: "We have enough!",
+      sublabel: "SUCCESS",
+      effects: { health: 10, energy: -10, resources: -5 },
+    },
+    optionB: {
+      label: "We don't...",
+      sublabel: "FAILURE",
+      effects: { health: -25, energy: -5 },
+    },
+  },
+  {
+    text: "A rescue helicopter is heard in the distance! You need volunteers to run and signal immediately.",
+    peopleNeeded: 8,
+    optionA: {
+      label: "We have enough!",
+      sublabel: "SUCCESS",
+      effects: { resources: -10, energy: -10, health: 10 },
+    },
+    optionB: {
+      label: "We don't...",
+      sublabel: "FAILURE",
+      effects: { health: -10, energy: -10, thirst: -10 },
     },
   },
 ];
