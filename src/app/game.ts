@@ -1,289 +1,104 @@
-export type StatKey = "hp" | "en" | "res" | "water";
-export type Stats = Record<StatKey, number>;
-export type Delta = Partial<Record<StatKey, number>>;
+const SITUATIONS = [
+  {
+    text: "The group looks around their surroundings. Should the group search for water in the jungle or remain and stay by the wreckage?",
+    optionA: { label: "Jungle", effects: { thirst: 20, energy: -10 } },
+    optionB: {
+      label: "Wreckage",
+      effects: { energy: 15, resources: 10, thirst: -10 },
+    },
+  },
+  {
+    text: "You find a stream but it looks murky. Do you purify it using resources, or drink it as-is and save supplies?",
+    optionA: {
+      label: "Purify It",
+      effects: { resources: -10, thirst: 20, health: 5 },
+    },
+    optionB: { label: "Drink Raw", effects: { thirst: 15, health: -10 } },
+  },
+  {
+    text: "A group member spots fruit high up in the trees. Do you climb for food or forage on the ground?",
+    optionA: {
+      label: "Climb",
+      effects: { energy: -10, health: 10, resources: 10 },
+    },
+    optionB: {
+      label: "Forage",
+      effects: { energy: -5, resources: 5, thirst: -5 },
+    },
+  },
+  {
+    text: "Night is falling. Should the group build a shelter using resources, or sleep in the open to conserve energy?",
+    optionA: {
+      label: "Build Shelter",
+      effects: { resources: -15, energy: -5, health: 15 },
+    },
+    optionB: { label: "Sleep Outside", effects: { health: -10, energy: 10 } },
+  },
+  {
+    text: "You discover a cave. Do you explore it for supplies, or set up camp at the entrance?",
+    optionA: {
+      label: "Explore",
+      effects: { energy: -10, resources: 20, health: -5 },
+    },
+    optionB: { label: "Camp Here", effects: { energy: 10, health: 5 } },
+  },
+  {
+    text: "A distant ship is spotted on the horizon. Do you light a signal fire using resources, or conserve and hope they see you?",
+    optionA: {
+      label: "Signal Fire",
+      effects: { resources: -15, energy: -5, health: 5 },
+    },
+    optionB: { label: "Wait & Hope", effects: { thirst: -5, energy: 5 } },
+  },
+];
 
-export type CardBase = {
-  id: string;
-  title: string;
-  prompt: string;
-  tag: "Teamwork" | "Communication" | "Decision" | "Resource";
-};
-
-export type SituationCard = CardBase & {
-  kind: "situation";
-  a: { label: string; delta: Delta; outcome: string };
-  b: { label: string; delta: Delta; outcome: string };
-};
-
-export type CrisisCard = CardBase & {
-  kind: "crisis";
-  requirementText: string; // shown to class
-  success: { delta: Delta; outcome: string };
-  fail: { delta: Delta; outcome: string };
-};
-
-export type Card = SituationCard | CrisisCard;
-
-/**
- * Rebalancing goals (start at 50):
- * - Early choices: +/- 4 to 10 (mostly one stat, sometimes two)
- * - Mid: introduce bigger swings (up to ~12)
- * - Crises: bigger punishments (up to ~16), but not constant
- * - Avoid always “swap” symmetry; include safer-but-slower options
- */
-export const SITUATIONS: SituationCard[] = [
+const CRISES = [
   {
-    id: "s1",
-    kind: "situation",
-    tag: "Decision",
-    title: "Situation: First Move",
-    prompt:
-      "You wake near the wreckage. The sun is rising fast. You need water soon—what’s the move?",
-    a: {
-      label: "Head into the jungle",
-      delta: { water: +10, en: -7 },
-      outcome:
-        "You push into the jungle. It’s exhausting, but you find damp leaves and a small trickle of water.",
+    text: "A fierce storm is approaching. The group needs volunteers to build an emergency barrier to protect everyone.",
+    peopleNeeded: 7,
+    optionA: {
+      label: "We have enough!",
+      sublabel: "SUCCESS",
+      effects: { resources: -10, energy: -5 },
     },
-    b: {
-      label: "Search the wreckage area",
-      delta: { res: +8, water: -6 },
-      outcome:
-        "You salvage useful supplies, but thirst builds—water is still a problem.",
+    optionB: {
+      label: "We don't...",
+      sublabel: "FAILURE",
+      effects: { resources: -20, energy: -10, health: -10 },
     },
   },
   {
-    id: "s2",
-    kind: "situation",
-    tag: "Resource",
-    title: "Situation: Shelter vs Supplies",
-    prompt:
-      "Night is coming. You can build now or save supplies and risk the cold.",
-    a: {
-      label: "Build a shelter now",
-      delta: { hp: +7, res: -9 },
-      outcome:
-        "You build a basic shelter. Safer tonight, but you burn through supplies.",
+    text: "A venomous snake bit a group member! You need volunteers to search for medicinal herbs in the jungle.",
+    peopleNeeded: 5,
+    optionA: {
+      label: "We have enough!",
+      sublabel: "SUCCESS",
+      effects: { energy: -10, resources: -5 },
     },
-    b: {
-      label: "Hide in a cave, save supplies",
-      delta: { res: +6, hp: -8 },
-      outcome:
-        "You conserve supplies, but the cave is harsh. Stress and minor injuries add up.",
+    optionB: {
+      label: "We don't...",
+      sublabel: "FAILURE",
+      effects: { health: -20, energy: -10 },
     },
   },
   {
-    id: "s3",
-    kind: "situation",
-    tag: "Decision",
-    title: "Situation: The Murky Pond",
-    prompt:
-      "You find a murky pond. Drinking helps now… but it might make someone sick.",
-    a: {
-      label: "Drink the water",
-      delta: { water: +9, hp: -12 },
-      outcome:
-        "You drink. Thirst improves fast, but stomach pain hits later. Health drops hard.",
+    text: "The water source has dried up! You need a search party of volunteers to trek inland and find a new one.",
+    peopleNeeded: 6,
+    optionA: {
+      label: "We have enough!",
+      sublabel: "SUCCESS",
+      effects: { energy: -10, thirst: -5 },
     },
-    b: {
-      label: "Don’t drink—keep searching",
-      delta: { water: -4, en: -6, hp: +4 },
-      outcome:
-        "You avoid illness, but the search drains you and thirst still hurts.",
-    },
-  },
-  {
-    id: "s4",
-    kind: "situation",
-    tag: "Resource",
-    title: "Situation: Food Run",
-    prompt:
-      "You spot fruit trees deeper in the jungle. Going could refill supplies, but it costs energy.",
-    a: {
-      label: "Forage for fruit",
-      delta: { res: +10, en: -8 },
-      outcome:
-        "You gather fruit and edible plants. Supplies rise, but you’re exhausted.",
-    },
-    b: {
-      label: "Stay and rest",
-      delta: { en: +9, res: -7 },
-      outcome: "You recover energy, but supplies run low. Hunger grows.",
-    },
-  },
-  {
-    id: "s5",
-    kind: "situation",
-    tag: "Decision",
-    title: "Situation: Driftwood in Strong Current",
-    prompt:
-      "Driftwood floats past—useful for tools and fire. The current looks dangerous.",
-    a: {
-      label: "Enter the water to grab driftwood",
-      delta: { res: +9, hp: -9 },
-      outcome:
-        "You secure useful wood, but someone gets scraped and bruised in the waves.",
-    },
-    b: {
-      label: "Don’t risk it",
-      delta: { res: -4, hp: +4 },
-      outcome:
-        "You avoid injury, but you miss a valuable chance to upgrade supplies.",
-    },
-  },
-  {
-    id: "s6",
-    kind: "situation",
-    tag: "Resource",
-    title: "Situation: Coconut Grove",
-    prompt: "You find coconuts—water + food. Collecting them is tiring work.",
-    a: {
-      label: "Collect coconuts",
-      delta: { water: +8, res: +4, en: -9 },
-      outcome:
-        "You crack coconuts and share them. Water and supplies improve, but it’s hard work.",
-    },
-    b: {
-      label: "Conserve energy and move on",
-      delta: { en: +6, water: -7 },
-      outcome: "You save energy now, but thirst becomes urgent again.",
-    },
-  },
-  {
-    id: "s7",
-    kind: "situation",
-    tag: "Communication",
-    title: "Situation: Disagreement",
-    prompt:
-      "Tension rises. People argue over what to do next. Do you slow down to align, or push forward anyway?",
-    a: {
-      label: "Pause to talk it out",
-      delta: { hp: +5, en: -5 },
-      outcome:
-        "You calm down, agree on a plan, and reduce stress—at the cost of time and energy.",
-    },
-    b: {
-      label: "Ignore conflict and push forward",
-      delta: { res: +6, hp: -9 },
-      outcome:
-        "You move faster, but distrust builds. Stress and mistakes hurt the group.",
-    },
-  },
-  {
-    id: "s8",
-    kind: "situation",
-    tag: "Decision",
-    title: "Situation: Planes Overhead",
-    prompt:
-      "You hear engines—planes overhead. This might be your best rescue window.",
-    a: {
-      label: "Build a signal fire",
-      delta: { hp: +7, res: -10, en: -4 },
-      outcome:
-        "You build a signal fire. It costs supplies, but hope rises—rescue feels possible.",
-    },
-    b: {
-      label: "Save supplies and stay hidden",
-      delta: { res: +5, hp: -8 },
-      outcome:
-        "You conserve supplies, but you miss the best rescue chance. Morale and health slip.",
-    },
-  },
-  {
-    id: "s9",
-    kind: "situation",
-    tag: "Resource",
-    title: "Situation: Rest Day",
-    prompt:
-      "You’re drained. Do you take a rest day, or keep working to stock up?",
-    a: {
-      label: "Rest",
-      delta: { en: +12, hp: +4, water: -5, res: -6 },
-      outcome:
-        "You recover well, but supplies and water shrink while you rest.",
-    },
-    b: {
-      label: "Push for supplies",
-      delta: { res: +11, water: +4, en: -12, hp: -5 },
-      outcome: "You stock up, but you’re exhausted and more prone to injury.",
+    optionB: {
+      label: "We don't...",
+      sublabel: "FAILURE",
+      effects: { thirst: -20, health: -10, energy: -5 },
     },
   },
 ];
 
-export const CRISES: CrisisCard[] = [
-  {
-    id: "c1",
-    kind: "crisis",
-    tag: "Teamwork",
-    title: "CRISIS: Storm Incoming",
-    prompt:
-      "A fierce storm hits suddenly. You must reinforce your shelter NOW.",
-    requirementText: "Need 7 volunteers in 5 seconds to reinforce the shelter!",
-    success: {
-      delta: { res: -8, en: -6 },
-      outcome:
-        "You reinforce the shelter in time. You lose some supplies and energy—but you stay safe.",
-    },
-    fail: {
-      delta: { hp: -14, res: -10, en: -6 },
-      outcome:
-        "The storm tears through your camp. People get hurt and supplies are damaged.",
-    },
-  },
-  {
-    id: "c2",
-    kind: "crisis",
-    tag: "Teamwork",
-    title: "CRISIS: Wild Boars",
-    prompt:
-      "Wild boars charge toward your camp. Defend your supplies or lose everything!",
-    requirementText: "Need 6 volunteers in 5 seconds to defend the shelter!",
-    success: {
-      delta: { hp: -8, res: -6 },
-      outcome:
-        "You scare them off, but someone gets knocked down and supplies are scattered.",
-    },
-    fail: {
-      delta: { res: -14, hp: -12 },
-      outcome:
-        "They raid your camp. Supplies are destroyed and injuries mount.",
-    },
-  },
-  {
-    id: "c3",
-    kind: "crisis",
-    tag: "Communication",
-    title: "CRISIS: Group Rift",
-    prompt:
-      "Arguments explode into a rift. If you don’t mediate, the group falls apart.",
-    requirementText: "Need 4 volunteers in 5 seconds to mediate the conflict!",
-    success: {
-      delta: { hp: +5, en: -6 },
-      outcome:
-        "You calm everyone down and restore trust—at the cost of energy and time.",
-    },
-    fail: {
-      delta: { hp: -13, en: -8 },
-      outcome:
-        "The group fractures. Bad decisions follow. Stress wrecks your health.",
-    },
-  },
-  {
-    id: "c4",
-    kind: "crisis",
-    tag: "Resource",
-    title: "CRISIS: Sudden Illness",
-    prompt:
-      "Several people fall ill. If you don’t care for them, things get worse fast.",
-    requirementText: "Need 6 volunteers in 5 seconds to care for the sick!",
-    success: {
-      delta: { res: -7, en: -6, hp: +4 },
-      outcome:
-        "You spend supplies and energy, but prevent the illness from spreading.",
-    },
-    fail: {
-      delta: { hp: -16, en: -8 },
-      outcome: "The illness spreads. Health collapses and the group weakens.",
-    },
-  },
+const THINKING_QUESTIONS = [
+  "How did you decide on which stat to prioritise? Would you change any decisions now? Why?",
+  "How did communication and teamwork play in your group's survival?",
+  "How did unexpected crises change your decision making?",
 ];
