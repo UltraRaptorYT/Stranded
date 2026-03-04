@@ -2053,8 +2053,8 @@ export default function StrandedGame() {
         <div
           style={{
             position: "fixed",
-            top: 14,
-            right: 14,
+            top: 24,
+            right: 24,
             zIndex: 50,
             background: "rgba(255,255,255,0.88)",
             backdropFilter: "blur(10px)",
@@ -2066,6 +2066,7 @@ export default function StrandedGame() {
             display: "flex",
             flexDirection: "column",
             gap: 5,
+            scale: 1.2,
           }}
         >
           {STAT_KEYS.map((stat) => {
