@@ -124,3 +124,78 @@
     @apply bg-background text-foreground;
   }
 }
+
+.fullHeight {
+  min-height: 100vh;
+}
+
+@supports (min-height: 100dvh) {
+  .fullHeight {
+    min-height: 100dvh;
+  }
+}
+
+@keyframes palm-sway {
+  0% {
+    transform: rotate(-2deg);
+  }
+  50% {
+    transform: rotate(2.5deg);
+  }
+  100% {
+    transform: rotate(-2deg);
+  }
+}
+
+.palmSway {
+  transform-origin: 50% 100%; /* bottom center */
+  animation: palm-sway 5s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes cloud-drift {
+  0% {
+    transform: translateX(-20vw);
+  }
+  100% {
+    transform: translateX(120vw);
+  }
+}
+
+.cloud {
+  position: absolute;
+  width: 140px;
+  height: 44px;
+  border-radius: 9999px;
+  opacity: 0.9;
+  filter: blur(0.2px);
+  animation: cloud-drift linear infinite;
+  will-change: transform;
+}
+
+/* make the cloud puffy using pseudo elements */
+.cloud::before,
+.cloud::after {
+  content: "";
+  position: absolute;
+  border-radius: 9999px;
+  width: 60px;
+  height: 60px;
+  top: -28px;
+  left: 18px;
+}
+
+.cloud::after {
+  width: 78px;
+  height: 78px;
+  top: -44px;
+  left: 54px;
+}
+
+/* subtle shading */
+.cloud,
+.cloud::before,
+.cloud::after {
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+}
